@@ -1,5 +1,5 @@
 import { createContext, useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import api from '../services/api';
 
 export const AuthContext = createContext({});
@@ -8,9 +8,9 @@ const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
-    console.log('teste');
     async function loadUser() {
       const token = localStorage.getItem('@context-demo:token');
 
@@ -35,17 +35,17 @@ const AuthProvider = ({ children }) => {
   async function registerUser(data) {
     try {
       const response = await api.post('/sessions', data);
-      console.log(response);
 
       const { user: userResponse, token } = response.data;
 
       api.defaults.headers.authorization = `Bearer ${token}`;
 
       setUser(userResponse);
-
       localStorage.setItem('@context-demo:token', token);
 
-      navigate('/dashboard', { replace: true });
+      const toNavigate = location.state?.from?.pathname || 'dashboard';
+
+      navigate(toNavigate, { replace: true });
     } catch (error) {
       console.error(error);
     }
